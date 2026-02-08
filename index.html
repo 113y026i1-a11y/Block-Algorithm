@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 演算法積木實驗室</title>
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        #blocklyDiv { width: 65%; height: 100%; border-right: 1px solid #ccc; }
+        #outputArea { width: 35%; padding: 20px; background-color: #f9f9f9; display: flex; flex-direction: column; }
+        h2 { margin-top: 0; color: #333; }
+        .control-panel { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        #console { background: #222; color: #0f0; padding: 15px; border-radius: 5px; flex-grow: 1; overflow-y: auto; font-family: monospace; white-space: pre-wrap; }
+        .file-input-group { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="blocklyDiv"></div>
+
+    <div id="outputArea">
+        <h2>🚀 演算法控制台</h2>
+        
+        <div class="control-panel">
+            <div class="file-input-group">
+                <label>1. 準備資料 (上傳 .txt 或 .csv):</label><br>
+                <input type="file" id="fileInput" accept=".txt,.csv,.json">
+            </div>
+            <div>
+                <label>2. 執行演算法:</label><br>
+                <button onclick="runCode()">▶️ 執行積木程式</button>
+            </div>
+        </div>
+
+        <label>執行結果:</label>
+        <div id="console">等待執行...</div>
+    </div>
+
+    <script>
+        // --- 1. 定義自定義積木 (Custom Blocks) ---
+
+        // 積木：取得上傳的檔案內容
+        Blockly.Blocks['get_file_content'] = {
+            init: function() {
+                this.appendDummyInput().appendField("📂 讀取上傳的檔案內容");
+                this.setOutput(true, "String");
+                this.setColour(230);
+                this.setTooltip("回傳使用者上傳檔案的文字內容");
+            }
+        };
+
+        // 積木：AI 關鍵字分析 (模擬 AI 解讀)
+        Blockly.Blocks['ai_analyze_sentiment'] = {
+            init: function() {
+                this.appendValueInput("TEXT").setCheck("String").appendField("🧠 AI 分析文本");
+                this.appendDummyInput().appendField("是否包含關鍵字");
+                this.appendValueInput("KEYWORD").setCheck("String");
+                this.setOutput(true, "Boolean");
+                this.setColour(160);
+                this.setTooltip("簡單的規則式 AI，檢查文本是否包含特定概念");
+            }
+        };
+
+        // 積木：推薦系統 - 計算分數
+        Blockly.Blocks['calc_recommendation_score'] = {
+            init: function() {
+                this.appendValueInput("BASE").setCheck("Number").appendField("📊 推薦演算法：基礎分");
+                this.appendValueInput("WEIGHT").setCheck("Number").appendField("x 權重");
+                this.setOutput(true, "Number");
+                this.setColour(60);
+                this.setTooltip("計算推薦權重分數");
+            }
+        };
+
+        // 積木：輸出結果
+        Blockly.Blocks['print_log'] = {
+            init: function() {
+                this.appendValueInput("MSG").setCheck(null).appendField("🖨️ 輸出結果到控制台");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(0);
+            }
+        };
+
+        // --- 2. 定義積木的 JavaScript 轉換邏輯 (Generators) ---
+
+        const javascript = Blockly.javascript;
+
+        javascript.javascriptGenerator.forBlock['get_file_content'] = function(block) {
+            // 呼叫我們定義在全域的 helper function
+            return ['getFileContent()', javascript.Order.ATOMIC];
+        };
+
+        javascript.javascriptGenerator.forBlock['ai_analyze_sentiment'] = function(block) {
+            const text = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.Order.NONE) || "''";
+            const keyword = javascript.javascriptGenerator.valueToCode(block, 'KEYWORD', javascript.Order.NONE) || "''";
+            // 產生檢查是否包含字串的程式碼
+            const code = `${text}.includes(${keyword})`;
+            return [code, javascript.Order.Eq];
+        };
+
+        javascript.javascriptGenerator.forBlock['calc_recommendation_score'] = function(block) {
+            const base = javascript.javascriptGenerator.valueToCode(block, 'BASE', javascript.Order.ATOMIC) || '0';
+            const weight = javascript.javascriptGenerator.valueToCode(block, 'WEIGHT', javascript.Order.ATOMIC) || '1';
+            const code = `(${base} * ${weight})`;
+            return [code, javascript.Order.MULTIPLICATION];
+        };
+
+        javascript.javascriptGenerator.forBlock['print_log'] = function(block) {
+            const msg = javascript.javascriptGenerator.valueToCode(block, 'MSG', javascript.Order.ATOMIC) || "''";
+            return `logToConsole(${msg});\n`;
+        };
+
+        // --- 3. 初始化 Blockly 工作區 ---
+
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: {
+                "kind": "categoryToolbox",
+                "contents": [
+                    {
+                        "kind": "category",
+                        "name": "核心邏輯",
+                        "colour": "210",
+                        "contents": [
+                            { "kind": "block", "type": "controls_if" },
+                            { "kind": "block", "type": "controls_repeat_ext" },
+                            { "kind": "block", "type": "logic_compare" },
+                            { "kind": "block", "type": "math_number" },
+                            { "kind": "block", "type": "text" }
+                        ]
+                    },
+                    {
+                        "kind": "category",
+                        "name": "數據與 AI",
+                        "colour": "160",
+                        "contents": [
+                            { "kind": "block", "type": "get_file_content" },
+                            { "kind": "block", "type": "ai_analyze_sentiment" },
+                            { "kind": "block", "type": "calc_recommendation_score" },
+                            { "kind": "block", "type": "print_log" }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        // 預設產生一些積木
+        const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+            <block type="print_log" x="50" y="50">
+                <value name="MSG">
+                    <block type="text">
+                        <field name="TEXT">系統啟動...</field>
+                    </block>
+                </value>
+                <next>
+                    <block type="controls_if">
+                        <value name="IF0">
+                            <block type="ai_analyze_sentiment">
+                                <value name="TEXT">
+                                    <block type="get_file_content"></block>
+                                </value>
+                                <value name="KEYWORD">
+                                    <block type="text">
+                                        <field name="TEXT">喜歡</field>
+                                    </block>
+                                </value>
+                            </block>
+                        </value>
+                        <statement name="DO0">
+                            <block type="print_log">
+                                <value name="MSG">
+                                    <block type="text">
+                                        <field name="TEXT">偵測到使用者偏好！推薦演算法啟動！</field>
+                                    </block>
+                                </value>
+                            </block>
+                        </statement>
+                    </block>
+                </next>
+            </block>
+        </xml>`;
+        Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(xmlText), workspace);
+
+
+        // --- 4. 執行環境 (Runtime) ---
+
+        let fileContent = "";
+
+        // 監聽檔案上傳
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileContent = e.target.result;
+                logToConsole(`系統: 檔案讀取成功 (${file.name})`);
+            };
+            reader.readAsText(file);
+        });
+
+        // Helper function: 供積木呼叫
+        function getFileContent() {
+            if (!fileContent) return "尚未讀取檔案或檔案為空";
+            return fileContent;
+        }
+
+        // Helper function: 輸出到畫面
+        function logToConsole(msg) {
+            const consoleDiv = document.getElementById('console');
+            consoleDiv.innerHTML += `> ${msg}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // 執行按鈕邏輯
+        function runCode() {
+            document.getElementById('console').innerHTML = "--- 開始執行 ---\n";
+            // 將積木轉為程式碼
+            const code = javascript.javascriptGenerator.workspaceToCode(workspace);
+            
+            try {
+                // 危險動作警告: 在正式產品中應使用更安全的解釋器 (Interpreter)，
+                // 但為了單一 HTML 檔案的簡便性，這裡使用 eval()。
+                eval(code); 
+            } catch (e) {
+                logToConsole(`錯誤: ${e}`);
+            }
+        }
+    </script>
+</body>
+</html>
