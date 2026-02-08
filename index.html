@@ -3,231 +3,1210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 演算法積木實驗室</title>
-    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <title>AlgoBlocks - 視覺化演算法建構工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        #blocklyDiv { width: 65%; height: 100%; border-right: 1px solid #ccc; }
-        #outputArea { width: 35%; padding: 20px; background-color: #f9f9f9; display: flex; flex-direction: column; }
-        h2 { margin-top: 0; color: #333; }
-        .control-panel { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #45a049; }
-        #console { background: #222; color: #0f0; padding: 15px; border-radius: 5px; flex-grow: 1; overflow-y: auto; font-family: monospace; white-space: pre-wrap; }
-        .file-input-group { margin-bottom: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 2.2rem;
+            color: #4dabf7;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #4dabf7, #da77f2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #4dabf7;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #339af0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #495057;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #3a4149;
+        }
+        
+        .btn-success {
+            background: #40c057;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #2f9e44;
+        }
+        
+        .content {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4dabf7;
+            color: #a5d8ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .blocks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .block {
+            background: #364453;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: grab;
+            border-left: 4px solid #4dabf7;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .block:hover {
+            background: #415066;
+            transform: translateX(5px);
+        }
+        
+        .block.i-block {
+            border-left-color: #ff922b;
+        }
+        
+        .block.p-block {
+            border-left-color: #da77f2;
+        }
+        
+        .block.o-block {
+            border-left-color: #40c057;
+        }
+        
+        .block-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .block-desc {
+            font-size: 0.85rem;
+            color: #adb5bd;
+        }
+        
+        .workspace {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: auto;
+        }
+        
+        .workspace-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #a5d8ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #droppable-area {
+            min-height: 500px;
+            width: 100%;
+            border: 2px dashed #495057;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        #droppable-area.drag-over {
+            border-color: #4dabf7;
+            background: rgba(77, 171, 247, 0.1);
+        }
+        
+        .output-panel {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .output-section {
+            margin-bottom: 20px;
+        }
+        
+        .code-output {
+            background: #1e2a3a;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 200px;
+            margin-top: 10px;
+        }
+        
+        .file-input-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #4dabf7;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .file-label:hover {
+            background: #339af0;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .file-content {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .block-in-workspace {
+            position: relative;
+            background: #415066;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4dabf7;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            cursor: move;
+            min-width: 250px;
+            max-width: 350px;
+        }
+        
+        .block-in-workspace .block-title {
+            color: #f0f0f0;
+        }
+        
+        .block-connector {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            background: #4dabf7;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .block-connector.top {
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .block-connector.bottom {
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .block-connector.left {
+            left: -5px;
+        }
+        
+        .block-connector.right {
+            right: -5px;
+        }
+        
+        .connection-line {
+            stroke: #4dabf7;
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+        }
+        
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .algorithm-examples {
+            margin-top: 20px;
+        }
+        
+        .example {
+            background: rgba(77, 171, 247, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid #4dabf7;
+        }
+        
+        .example:hover {
+            background: rgba(77, 171, 247, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #a5d8ff;
+        }
+        
+        .example-desc {
+            font-size: 0.85rem;
+            color: #adb5bd;
+        }
+        
+        .empty-workspace {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px 20px;
+        }
+        
+        .empty-workspace i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .algorithm-preview {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #74c0fc;
+            line-height: 1.4;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            margin-top: 10px;
+            color: #adb5bd;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 1200px) {
+            .content {
+                flex-wrap: wrap;
+                overflow-y: auto;
+            }
+            
+            .sidebar, .output-panel {
+                width: 100%;
+            }
+            
+            .workspace {
+                min-height: 500px;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <div id="blocklyDiv"></div>
-
-    <div id="outputArea">
-        <h2>🚀 演算法控制台</h2>
-        
-        <div class="control-panel">
-            <div class="file-input-group">
-                <label>1. 準備資料 (上傳 .txt 或 .csv):</label><br>
-                <input type="file" id="fileInput" accept=".txt,.csv,.json">
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-cubes"></i>
+                <h1>AlgoBlocks - 視覺化演算法建構器</h1>
             </div>
-            <div>
-                <label>2. 執行演算法:</label><br>
-                <button onclick="runCode()">▶️ 執行積木程式</button>
+            <div class="controls">
+                <button class="btn btn-primary" id="run-algorithm">
+                    <i class="fas fa-play"></i> 執行演算法
+                </button>
+                <button class="btn btn-secondary" id="clear-workspace">
+                    <i class="fas fa-trash-alt"></i> 清除工作區
+                </button>
+                <button class="btn btn-success" id="save-algorithm">
+                    <i class="fas fa-save"></i> 儲存演算法
+                </button>
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="sidebar">
+                <div class="section-title">
+                    <i class="fas fa-puzzle-piece"></i>
+                    演算法積木
+                </div>
+                
+                <div class="blocks-container">
+                    <div class="block i-block" data-type="input" data-id="file-reader">
+                        <div class="block-title">
+                            <i class="fas fa-file-import"></i>
+                            讀取文件
+                        </div>
+                        <div class="block-desc">
+                            讀取上傳的文件內容
+                        </div>
+                    </div>
+                    
+                    <div class="block p-block" data-type="process" data-id="text-preprocess">
+                        <div class="block-title">
+                            <i class="fas fa-text-height"></i>
+                            文本預處理
+                        </div>
+                        <div class="block-desc">
+                            清理和準備文本數據
+                        </div>
+                    </div>
+                    
+                    <div class="block p-block" data-type="process" data-id="tfidf">
+                        <div class="block-title">
+                            <i class="fas fa-chart-bar"></i>
+                            TF-IDF 向量化
+                        </div>
+                        <div class="block-desc">
+                            將文本轉換為TF-IDF特徵向量
+                        </div>
+                    </div>
+                    
+                    <div class="block p-block" data-type="process" data-id="similarity">
+                        <div class="block-title">
+                            <i class="fas fa-project-diagram"></i>
+                            相似度計算
+                        </div>
+                        <div class="block-desc">
+                            計算項目之間的相似度
+                        </div>
+                    </div>
+                    
+                    <div class="block p-block" data-type="process" data-id="collaborative-filtering">
+                        <div class="block-title">
+                            <i class="fas fa-users"></i>
+                            協同過濾
+                        </div>
+                        <div class="block-desc">
+                            基於用戶行為的推薦演算法
+                        </div>
+                    </div>
+                    
+                    <div class="block p-block" data-type="process" data-id="neural-network">
+                        <div class="block-title">
+                            <i class="fas fa-brain"></i>
+                            神經網路模型
+                        </div>
+                        <div class="block-desc">
+                            深度學習推薦模型
+                        </div>
+                    </div>
+                    
+                    <div class="block o-block" data-type="output" data-id="recommendation">
+                        <div class="block-title">
+                            <i class="fas fa-star"></i>
+                            生成推薦
+                        </div>
+                        <div class="block-desc">
+                            輸出推薦結果
+                        </div>
+                    </div>
+                    
+                    <div class="block o-block" data-type="output" data-id="export-results">
+                        <div class="block-title">
+                            <i class="fas fa-file-export"></i>
+                            匯出結果
+                        </div>
+                        <div class="block-desc">
+                            將結果儲存為文件
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-title">
+                    <i class="fas fa-file-upload"></i>
+                    文件上傳
+                </div>
+                
+                <div class="file-input-section">
+                    <p>上傳文件以供演算法處理：</p>
+                    <div class="file-upload">
+                        <label class="file-label" for="file-input">
+                            <i class="fas fa-upload"></i>
+                            選擇文件
+                        </label>
+                        <input type="file" id="file-input" accept=".txt,.csv,.json">
+                        <div class="file-content" id="file-content">
+                            尚未選擇文件
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="algorithm-examples">
+                    <div class="section-title">
+                        <i class="fas fa-lightbulb"></i>
+                        演算法範例
+                    </div>
+                    
+                    <div class="example" data-example="recommendation">
+                        <div class="example-title">推薦系統演算法</div>
+                        <div class="example-desc">基於內容和協同過濾的混合推薦</div>
+                    </div>
+                    
+                    <div class="example" data-example="clustering">
+                        <div class="example-title">文本聚類演算法</div>
+                        <div class="example-desc">使用K-means對文本進行分群</div>
+                    </div>
+                    
+                    <div class="example" data-example="sentiment">
+                        <div class="example-title">情感分析演算法</div>
+                        <div class="example-desc">分析文本中的情感傾向</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workspace">
+                <div class="workspace-title">
+                    <i class="fas fa-code"></i>
+                    演算法工作區
+                </div>
+                
+                <div id="droppable-area">
+                    <div class="empty-workspace" id="empty-workspace">
+                        <i class="fas fa-code-branch"></i>
+                        <h3>將積木拖放到此處來建立演算法</h3>
+                        <p>從左側選擇積木並拖放到這裡來創建您的AI或推薦演算法</p>
+                    </div>
+                </div>
+                
+                <svg id="connections-svg"></svg>
+            </div>
+            
+            <div class="output-panel">
+                <div class="output-section">
+                    <div class="section-title">
+                        <i class="fas fa-terminal"></i>
+                        演算法輸出
+                    </div>
+                    <div class="code-output" id="algorithm-output">
+演算法輸出將顯示在這裡...
+請上傳文件並建立演算法後點擊"執行演算法"
+                    </div>
+                </div>
+                
+                <div class="output-section">
+                    <div class="section-title">
+                        <i class="fas fa-project-diagram"></i>
+                        演算法結構
+                    </div>
+                    <div class="code-output" id="algorithm-structure">
+尚未建立演算法結構
+                    </div>
+                </div>
+                
+                <div class="output-section">
+                    <div class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        演算法預覽
+                    </div>
+                    <div class="algorithm-preview" id="algorithm-preview">
+                        在此顯示當前演算法的偽代碼預覽
+                    </div>
+                </div>
             </div>
         </div>
-
-        <label>執行結果:</label>
-        <div id="console">等待執行...</div>
+        
+        <footer>
+            <p>AlgoBlocks - 視覺化演算法建構工具 | 專為AI和推薦演算法設計 | 使用HTML5技術實現</p>
+        </footer>
     </div>
 
     <script>
-        // --- 1. 定義自定義積木 (Custom Blocks) ---
-
-        // 積木：取得上傳的檔案內容
-        Blockly.Blocks['get_file_content'] = {
-            init: function() {
-                this.appendDummyInput().appendField("📂 讀取上傳的檔案內容");
-                this.setOutput(true, "String");
-                this.setColour(230);
-                this.setTooltip("回傳使用者上傳檔案的文字內容");
-            }
-        };
-
-        // 積木：AI 關鍵字分析 (模擬 AI 解讀)
-        Blockly.Blocks['ai_analyze_sentiment'] = {
-            init: function() {
-                this.appendValueInput("TEXT").setCheck("String").appendField("🧠 AI 分析文本");
-                this.appendDummyInput().appendField("是否包含關鍵字");
-                this.appendValueInput("KEYWORD").setCheck("String");
-                this.setOutput(true, "Boolean");
-                this.setColour(160);
-                this.setTooltip("簡單的規則式 AI，檢查文本是否包含特定概念");
-            }
-        };
-
-        // 積木：推薦系統 - 計算分數
-        Blockly.Blocks['calc_recommendation_score'] = {
-            init: function() {
-                this.appendValueInput("BASE").setCheck("Number").appendField("📊 推薦演算法：基礎分");
-                this.appendValueInput("WEIGHT").setCheck("Number").appendField("x 權重");
-                this.setOutput(true, "Number");
-                this.setColour(60);
-                this.setTooltip("計算推薦權重分數");
-            }
-        };
-
-        // 積木：輸出結果
-        Blockly.Blocks['print_log'] = {
-            init: function() {
-                this.appendValueInput("MSG").setCheck(null).appendField("🖨️ 輸出結果到控制台");
-                this.setPreviousStatement(true, null);
-                this.setNextStatement(true, null);
-                this.setColour(0);
-            }
-        };
-
-        // --- 2. 定義積木的 JavaScript 轉換邏輯 (Generators) ---
-
-        const javascript = Blockly.javascript;
-
-        javascript.javascriptGenerator.forBlock['get_file_content'] = function(block) {
-            // 呼叫我們定義在全域的 helper function
-            return ['getFileContent()', javascript.Order.ATOMIC];
-        };
-
-        javascript.javascriptGenerator.forBlock['ai_analyze_sentiment'] = function(block) {
-            const text = javascript.javascriptGenerator.valueToCode(block, 'TEXT', javascript.Order.NONE) || "''";
-            const keyword = javascript.javascriptGenerator.valueToCode(block, 'KEYWORD', javascript.Order.NONE) || "''";
-            // 產生檢查是否包含字串的程式碼
-            const code = `${text}.includes(${keyword})`;
-            return [code, javascript.Order.Eq];
-        };
-
-        javascript.javascriptGenerator.forBlock['calc_recommendation_score'] = function(block) {
-            const base = javascript.javascriptGenerator.valueToCode(block, 'BASE', javascript.Order.ATOMIC) || '0';
-            const weight = javascript.javascriptGenerator.valueToCode(block, 'WEIGHT', javascript.Order.ATOMIC) || '1';
-            const code = `(${base} * ${weight})`;
-            return [code, javascript.Order.MULTIPLICATION];
-        };
-
-        javascript.javascriptGenerator.forBlock['print_log'] = function(block) {
-            const msg = javascript.javascriptGenerator.valueToCode(block, 'MSG', javascript.Order.ATOMIC) || "''";
-            return `logToConsole(${msg});\n`;
-        };
-
-        // --- 3. 初始化 Blockly 工作區 ---
-
-        const workspace = Blockly.inject('blocklyDiv', {
-            toolbox: {
-                "kind": "categoryToolbox",
-                "contents": [
-                    {
-                        "kind": "category",
-                        "name": "核心邏輯",
-                        "colour": "210",
-                        "contents": [
-                            { "kind": "block", "type": "controls_if" },
-                            { "kind": "block", "type": "controls_repeat_ext" },
-                            { "kind": "block", "type": "logic_compare" },
-                            { "kind": "block", "type": "math_number" },
-                            { "kind": "block", "type": "text" }
-                        ]
-                    },
-                    {
-                        "kind": "category",
-                        "name": "數據與 AI",
-                        "colour": "160",
-                        "contents": [
-                            { "kind": "block", "type": "get_file_content" },
-                            { "kind": "block", "type": "ai_analyze_sentiment" },
-                            { "kind": "block", "type": "calc_recommendation_score" },
-                            { "kind": "block", "type": "print_log" }
-                        ]
-                    }
-                ]
-            }
-        });
-
-        // 預設產生一些積木
-        const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
-            <block type="print_log" x="50" y="50">
-                <value name="MSG">
-                    <block type="text">
-                        <field name="TEXT">系統啟動...</field>
-                    </block>
-                </value>
-                <next>
-                    <block type="controls_if">
-                        <value name="IF0">
-                            <block type="ai_analyze_sentiment">
-                                <value name="TEXT">
-                                    <block type="get_file_content"></block>
-                                </value>
-                                <value name="KEYWORD">
-                                    <block type="text">
-                                        <field name="TEXT">喜歡</field>
-                                    </block>
-                                </value>
-                            </block>
-                        </value>
-                        <statement name="DO0">
-                            <block type="print_log">
-                                <value name="MSG">
-                                    <block type="text">
-                                        <field name="TEXT">偵測到使用者偏好！推薦演算法啟動！</field>
-                                    </block>
-                                </value>
-                            </block>
-                        </statement>
-                    </block>
-                </next>
-            </block>
-        </xml>`;
-        Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(xmlText), workspace);
-
-
-        // --- 4. 執行環境 (Runtime) ---
-
-        let fileContent = "";
-
-        // 監聽檔案上傳
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                fileContent = e.target.result;
-                logToConsole(`系統: 檔案讀取成功 (${file.name})`);
-            };
-            reader.readAsText(file);
-        });
-
-        // Helper function: 供積木呼叫
-        function getFileContent() {
-            if (!fileContent) return "尚未讀取檔案或檔案為空";
-            return fileContent;
-        }
-
-        // Helper function: 輸出到畫面
-        function logToConsole(msg) {
-            const consoleDiv = document.getElementById('console');
-            consoleDiv.innerHTML += `> ${msg}\n`;
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        }
-
-        // 執行按鈕邏輯
-        function runCode() {
-            document.getElementById('console').innerHTML = "--- 開始執行 ---\n";
-            // 將積木轉為程式碼
-            const code = javascript.javascriptGenerator.workspaceToCode(workspace);
+        document.addEventListener('DOMContentLoaded', function() {
+            // 變數初始化
+            let draggedBlock = null;
+            let blocksInWorkspace = [];
+            let fileContent = '';
+            let nextBlockId = 1;
             
-            try {
-                // 危險動作警告: 在正式產品中應使用更安全的解釋器 (Interpreter)，
-                // 但為了單一 HTML 檔案的簡便性，這裡使用 eval()。
-                eval(code); 
-            } catch (e) {
-                logToConsole(`錯誤: ${e}`);
+            // 積木定義
+            const blockDefinitions = {
+                'file-reader': {
+                    name: '讀取文件',
+                    type: 'input',
+                    description: '讀取上傳的文件內容',
+                    code: 'file_data = read_file(file_path)',
+                    output: 'data'
+                },
+                'text-preprocess': {
+                    name: '文本預處理',
+                    type: 'process',
+                    description: '清理和準備文本數據',
+                    code: 'processed_data = preprocess_text(data)',
+                    inputs: ['data'],
+                    output: 'processed_data'
+                },
+                'tfidf': {
+                    name: 'TF-IDF 向量化',
+                    type: 'process',
+                    description: '將文本轉換為TF-IDF特徵向量',
+                    code: 'tfidf_vectors = tfidf_vectorize(processed_data)',
+                    inputs: ['processed_data'],
+                    output: 'tfidf_vectors'
+                },
+                'similarity': {
+                    name: '相似度計算',
+                    type: 'process',
+                    description: '計算項目之間的相似度',
+                    code: 'similarity_matrix = calculate_similarity(tfidf_vectors)',
+                    inputs: ['tfidf_vectors'],
+                    output: 'similarity_matrix'
+                },
+                'collaborative-filtering': {
+                    name: '協同過濾',
+                    type: 'process',
+                    description: '基於用戶行為的推薦演算法',
+                    code: 'user_recommendations = collaborative_filtering(data, user_id)',
+                    inputs: ['data'],
+                    output: 'user_recommendations'
+                },
+                'neural-network': {
+                    name: '神經網路模型',
+                    type: 'process',
+                    description: '深度學習推薦模型',
+                    code: 'predictions = neural_network_model(data)',
+                    inputs: ['data'],
+                    output: 'predictions'
+                },
+                'recommendation': {
+                    name: '生成推薦',
+                    type: 'output',
+                    description: '輸出推薦結果',
+                    code: 'recommendations = generate_recommendations(similarity_matrix, item_id)',
+                    inputs: ['similarity_matrix'],
+                    output: 'recommendations'
+                },
+                'export-results': {
+                    name: '匯出結果',
+                    type: 'output',
+                    description: '將結果儲存為文件',
+                    code: 'export_to_file(results, "output.txt")',
+                    inputs: ['results'],
+                    output: 'export_status'
+                }
+            };
+            
+            // 範例演算法定義
+            const exampleAlgorithms = {
+                'recommendation': [
+                    {id: 'file-reader', x: 50, y: 30},
+                    {id: 'text-preprocess', x: 250, y: 30},
+                    {id: 'tfidf', x: 450, y: 30},
+                    {id: 'similarity', x: 650, y: 30},
+                    {id: 'recommendation', x: 850, y: 30}
+                ],
+                'clustering': [
+                    {id: 'file-reader', x: 50, y: 30},
+                    {id: 'text-preprocess', x: 250, y: 30},
+                    {id: 'tfidf', x: 450, y: 30},
+                    {id: 'neural-network', x: 650, y: 30}
+                ],
+                'sentiment': [
+                    {id: 'file-reader', x: 50, y: 30},
+                    {id: 'text-preprocess', x: 250, y: 30},
+                    {id: 'neural-network', x: 450, y: 30}
+                ]
+            };
+            
+            // 獲取DOM元素
+            const droppableArea = document.getElementById('droppable-area');
+            const emptyWorkspace = document.getElementById('empty-workspace');
+            const blocks = document.querySelectorAll('.block');
+            const runAlgorithmBtn = document.getElementById('run-algorithm');
+            const clearWorkspaceBtn = document.getElementById('clear-workspace');
+            const saveAlgorithmBtn = document.getElementById('save-algorithm');
+            const fileInput = document.getElementById('file-input');
+            const fileContentDisplay = document.getElementById('file-content');
+            const algorithmOutput = document.getElementById('algorithm-output');
+            const algorithmStructure = document.getElementById('algorithm-structure');
+            const algorithmPreview = document.getElementById('algorithm-preview');
+            const examples = document.querySelectorAll('.example');
+            
+            // 初始化SVG用於連接線
+            const svg = document.getElementById('connections-svg');
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'arrowhead');
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+            polygon.setAttribute('fill', '#4dabf7');
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            svg.appendChild(defs);
+            
+            // 為積木添加拖放事件
+            blocks.forEach(block => {
+                block.addEventListener('dragstart', function(e) {
+                    draggedBlock = this.getAttribute('data-id');
+                    this.style.opacity = '0.5';
+                    e.dataTransfer.setData('text/plain', draggedBlock);
+                });
+                
+                block.addEventListener('dragend', function() {
+                    this.style.opacity = '1';
+                    draggedBlock = null;
+                });
+            });
+            
+            // 工作區拖放事件
+            droppableArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            
+            droppableArea.addEventListener('dragleave', function() {
+                this.classList.remove('drag-over');
+            });
+            
+            droppableArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                const blockId = e.dataTransfer.getData('text/plain');
+                if (!blockId) return;
+                
+                // 計算放置位置
+                const rect = droppableArea.getBoundingClientRect();
+                const x = e.clientX - rect.left - 125; // 調整積木中心點
+                const y = e.clientY - rect.top - 30;
+                
+                addBlockToWorkspace(blockId, x, y);
+            });
+            
+            // 添加積木到工作區
+            function addBlockToWorkspace(blockId, x, y) {
+                const blockDef = blockDefinitions[blockId];
+                if (!blockDef) return;
+                
+                // 隱藏空白工作區訊息
+                emptyWorkspace.style.display = 'none';
+                
+                // 創建積木元素
+                const blockElement = document.createElement('div');
+                blockElement.className = 'block-in-workspace';
+                blockElement.setAttribute('data-block-id', blockId);
+                blockElement.setAttribute('data-instance-id', nextBlockId);
+                blockElement.style.position = 'absolute';
+                blockElement.style.left = `${x}px`;
+                blockElement.style.top = `${y}px`;
+                
+                // 添加積木類型類別
+                if (blockDef.type === 'input') {
+                    blockElement.style.borderLeftColor = '#ff922b';
+                } else if (blockDef.type === 'process') {
+                    blockElement.style.borderLeftColor = '#da77f2';
+                } else if (blockDef.type === 'output') {
+                    blockElement.style.borderLeftColor = '#40c057';
+                }
+                
+                // 積木內容
+                blockElement.innerHTML = `
+                    <div class="block-title">
+                        <i class="fas fa-${blockDef.type === 'input' ? 'file-import' : blockDef.type === 'output' ? 'file-export' : 'cogs'}"></i>
+                        ${blockDef.name}
+                    </div>
+                    <div class="block-desc">${blockDef.description}</div>
+                    <div class="block-connector top"></div>
+                    <div class="block-connector bottom"></div>
+                    <div class="block-connector left"></div>
+                    <div class="block-connector right"></div>
+                `;
+                
+                // 添加拖動功能
+                makeDraggable(blockElement);
+                
+                // 添加到工作區
+                droppableArea.appendChild(blockElement);
+                
+                // 儲存到陣列
+                blocksInWorkspace.push({
+                    id: blockId,
+                    instanceId: nextBlockId,
+                    element: blockElement,
+                    x: x,
+                    y: y,
+                    type: blockDef.type
+                });
+                
+                nextBlockId++;
+                
+                // 更新演算法預覽
+                updateAlgorithmPreview();
+                updateAlgorithmStructure();
+                
+                // 重新繪製連接線
+                setTimeout(drawConnections, 100);
             }
-        }
+            
+            // 使工作區積木可拖動
+            function makeDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                
+                element.onmousedown = dragMouseDown;
+                
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    
+                    // 獲取滑鼠位置
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    document.onmouseup = closeDragElement;
+                    document.onmousemove = elementDrag;
+                }
+                
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    
+                    // 計算新位置
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    // 設置元素新位置
+                    const newTop = element.offsetTop - pos2;
+                    const newLeft = element.offsetLeft - pos1;
+                    
+                    // 確保積木在工作區範圍內
+                    const workspaceRect = droppableArea.getBoundingClientRect();
+                    const elementRect = element.getBoundingClientRect();
+                    
+                    if (newTop >= 0 && newTop <= workspaceRect.height - elementRect.height) {
+                        element.style.top = newTop + "px";
+                    }
+                    
+                    if (newLeft >= 0 && newLeft <= workspaceRect.width - elementRect.width) {
+                        element.style.left = newLeft + "px";
+                    }
+                    
+                    // 更新儲存的位置
+                    const instanceId = parseInt(element.getAttribute('data-instance-id'));
+                    const blockIndex = blocksInWorkspace.findIndex(b => b.instanceId === instanceId);
+                    if (blockIndex !== -1) {
+                        blocksInWorkspace[blockIndex].x = newLeft;
+                        blocksInWorkspace[blockIndex].y = newTop;
+                    }
+                    
+                    // 重新繪製連接線
+                    drawConnections();
+                }
+                
+                function closeDragElement() {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+            
+            // 繪製連接線
+            function drawConnections() {
+                // 清除現有連接線
+                const existingLines = svg.querySelectorAll('.connection-line');
+                existingLines.forEach(line => line.remove());
+                
+                // 按順序連接積木
+                for (let i = 0; i < blocksInWorkspace.length - 1; i++) {
+                    const currentBlock = blocksInWorkspace[i];
+                    const nextBlock = blocksInWorkspace[i + 1];
+                    
+                    const currentElement = currentBlock.element;
+                    const nextElement = nextBlock.element;
+                    
+                    const currentRect = currentElement.getBoundingClientRect();
+                    const nextRect = nextElement.getBoundingClientRect();
+                    const workspaceRect = droppableArea.getBoundingClientRect();
+                    
+                    // 計算連接點座標
+                    const startX = currentRect.left - workspaceRect.left + currentRect.width;
+                    const startY = currentRect.top - workspaceRect.top + currentRect.height / 2;
+                    const endX = nextRect.left - workspaceRect.left;
+                    const endY = nextRect.top - workspaceRect.top + nextRect.height / 2;
+                    
+                    // 創建連接線
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', endX);
+                    line.setAttribute('y2', endY);
+                    line.setAttribute('class', 'connection-line');
+                    
+                    svg.appendChild(line);
+                }
+            }
+            
+            // 執行演算法
+            runAlgorithmBtn.addEventListener('click', function() {
+                if (blocksInWorkspace.length === 0) {
+                    algorithmOutput.textContent = '錯誤：工作區中沒有積木。請先拖放積木建立演算法。';
+                    return;
+                }
+                
+                if (!fileContent && blocksInWorkspace.some(b => b.id === 'file-reader')) {
+                    algorithmOutput.textContent = '錯誤：演算法包含讀取文件積木，但未上傳任何文件。請先上傳文件。';
+                    return;
+                }
+                
+                // 模擬執行演算法
+                algorithmOutput.textContent = '正在執行演算法...\n\n';
+                algorithmOutput.textContent += '演算法步驟：\n';
+                
+                blocksInWorkspace.forEach((block, index) => {
+                    const blockDef = blockDefinitions[block.id];
+                    algorithmOutput.textContent += `${index + 1}. ${blockDef.name}: ${blockDef.description}\n`;
+                    algorithmOutput.textContent += `   代碼: ${blockDef.code}\n\n`;
+                });
+                
+                algorithmOutput.textContent += '--- 演算法執行結果 ---\n\n';
+                
+                // 根據文件內容和演算法產生輸出
+                if (fileContent) {
+                    const lines = fileContent.split('\n').slice(0, 10); // 只取前10行作為示例
+                    algorithmOutput.textContent += `已處理文件內容（顯示前${lines.length}行）：\n`;
+                    lines.forEach((line, i) => {
+                        if (line.trim()) {
+                            algorithmOutput.textContent += `行 ${i + 1}: ${line}\n`;
+                        }
+                    });
+                    
+                    algorithmOutput.textContent += '\n推薦結果（示例）：\n';
+                    algorithmOutput.textContent += '1. 項目A - 相似度: 0.95\n';
+                    algorithmOutput.textContent += '2. 項目B - 相似度: 0.89\n';
+                    algorithmOutput.textContent += '3. 項目C - 相似度: 0.82\n';
+                    algorithmOutput.textContent += '4. 項目D - 相似度: 0.76\n';
+                    algorithmOutput.textContent += '5. 項目E - 相似度: 0.71\n';
+                } else {
+                    algorithmOutput.textContent += '無文件內容可處理，顯示示例輸出：\n';
+                    algorithmOutput.textContent += '推薦演算法已成功執行。\n';
+                    algorithmOutput.textContent += '基於協同過濾和內容相似度分析，已生成個性化推薦。\n';
+                }
+                
+                // 顯示成功訊息
+                algorithmOutput.textContent += '\n✅ 演算法執行完成！';
+            });
+            
+            // 清除工作區
+            clearWorkspaceBtn.addEventListener('click', function() {
+                blocksInWorkspace.forEach(block => {
+                    block.element.remove();
+                });
+                
+                blocksInWorkspace = [];
+                emptyWorkspace.style.display = 'block';
+                
+                // 清除連接線
+                const existingLines = svg.querySelectorAll('.connection-line');
+                existingLines.forEach(line => line.remove());
+                
+                // 清除輸出
+                algorithmOutput.textContent = '工作區已清除。請拖放積木建立新的演算法。';
+                algorithmStructure.textContent = '尚未建立演算法結構';
+                algorithmPreview.textContent = '在此顯示當前演算法的偽代碼預覽';
+            });
+            
+            // 儲存演算法
+            saveAlgorithmBtn.addEventListener('click', function() {
+                if (blocksInWorkspace.length === 0) {
+                    alert('工作區中沒有積木可儲存。');
+                    return;
+                }
+                
+                const algorithmData = {
+                    blocks: blocksInWorkspace.map(block => ({
+                        id: block.id,
+                        x: block.x,
+                        y: block.y
+                    })),
+                    fileContent: fileContent ? fileContent.substring(0, 500) + '...' : null,
+                    created: new Date().toISOString()
+                };
+                
+                const dataStr = JSON.stringify(algorithmData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `algorithm_${new Date().toISOString().slice(0, 10)}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                algorithmOutput.textContent = `演算法已儲存為 ${exportFileDefaultName}\n\n包含 ${blocksInWorkspace.length} 個積木和${fileContent ? '已上傳的文件內容' : '無文件內容'}`;
+            });
+            
+            // 處理文件上傳
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) {
+                    fileContentDisplay.textContent = '尚未選擇文件';
+                    fileContent = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    fileContent = e.target.result;
+                    const fileSize = file.size;
+                    const fileType = file.type;
+                    
+                    // 顯示文件資訊
+                    fileContentDisplay.innerHTML = `
+                        <strong>已上傳文件：</strong> ${file.name}<br>
+                        <strong>大小：</strong> ${formatFileSize(fileSize)}<br>
+                        <strong>類型：</strong> ${fileType}<br>
+                        <strong>內容預覽：</strong><br>
+                        <div style="margin-top: 5px; max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
+                            ${escapeHtml(fileContent.substring(0, 200))}${fileContent.length > 200 ? '...' : ''}
+                        </div>
+                    `;
+                    
+                    algorithmOutput.textContent = `文件 "${file.name}" 已成功上載，大小: ${formatFileSize(fileSize)}。\n現在可以執行演算法處理此文件。`;
+                };
+                
+                reader.onerror = function() {
+                    fileContentDisplay.textContent = '讀取文件時發生錯誤';
+                    fileContent = '';
+                };
+                
+                reader.readAsText(file);
+            });
+            
+            // 範例演算法載入
+            examples.forEach(example => {
+                example.addEventListener('click', function() {
+                    const exampleId = this.getAttribute('data-example');
+                    const exampleBlocks = exampleAlgorithms[exampleId];
+                    
+                    if (!exampleBlocks) return;
+                    
+                    // 清除現有工作區
+                    clearWorkspaceBtn.click();
+                    
+                    // 添加範例積木
+                    exampleBlocks.forEach((block, index) => {
+                        setTimeout(() => {
+                            addBlockToWorkspace(block.id, block.x, block.y);
+                        }, index * 100);
+                    });
+                    
+                    // 更新演算法預覽
+                    setTimeout(() => {
+                        if (exampleId === 'recommendation') {
+                            algorithmPreview.innerHTML = `
+                                <strong>推薦系統演算法流程：</strong><br>
+                                1. 讀取用戶數據文件<br>
+                                2. 對文本進行預處理（分詞、去除停用詞）<br>
+                                3. 使用TF-IDF將文本轉換為向量<br>
+                                4. 計算項目之間的相似度矩陣<br>
+                                5. 基於相似度生成個性化推薦<br>
+                            `;
+                        } else if (exampleId === 'clustering') {
+                            algorithmPreview.innerHTML = `
+                                <strong>文本聚類演算法流程：</strong><br>
+                                1. 讀取文本數據文件<br>
+                                2. 對文本進行預處理和清洗<br>
+                                3. 使用TF-IDF進行特徵提取<br>
+                                4. 應用神經網路進行文本聚類<br>
+                            `;
+                        } else if (exampleId === 'sentiment') {
+                            algorithmPreview.innerHTML = `
+                                <strong>情感分析演算法流程：</strong><br>
+                                1. 讀取文本評論數據<br>
+                                2. 對文本進行預處理和標準化<br>
+                                3. 使用神經網路模型進行情感分類<br>
+                            `;
+                        }
+                    }, exampleBlocks.length * 100 + 100);
+                });
+            });
+            
+            // 更新演算法預覽
+            function updateAlgorithmPreview() {
+                if (blocksInWorkspace.length === 0) {
+                    algorithmPreview.textContent = '在此顯示當前演算法的偽代碼預覽';
+                    return;
+                }
+                
+                let preview = '<strong>當前演算法流程：</strong><br>';
+                
+                blocksInWorkspace.forEach((block, index) => {
+                    const blockDef = blockDefinitions[block.id];
+                    preview += `${index + 1}. ${blockDef.name}<br>`;
+                });
+                
+                // 添加演算法類型判斷
+                const hasRecommendation = blocksInWorkspace.some(b => b.id === 'recommendation');
+                const hasNeuralNetwork = blocksInWorkspace.some(b => b.id === 'neural-network');
+                
+                if (hasRecommendation) {
+                    preview += '<br><strong>演算法類型：推薦系統</strong><br>';
+                    preview += '此演算法將根據用戶行為和內容相似度生成推薦。';
+                } else if (hasNeuralNetwork) {
+                    preview += '<br><strong>演算法類型：AI/機器學習</strong><br>';
+                    preview += '此演算法使用神經網路模型進行分析或預測。';
+                }
+                
+                algorithmPreview.innerHTML = preview;
+            }
+            
+            // 更新演算法結構
+            function updateAlgorithmStructure() {
+                if (blocksInWorkspace.length === 0) {
+                    algorithmStructure.textContent = '尚未建立演算法結構';
+                    return;
+                }
+                
+                let structure = '演算法結構（按執行順序）：\n\n';
+                
+                blocksInWorkspace.forEach((block, index) => {
+                    const blockDef = blockDefinitions[block.id];
+                    structure += `[${blockDef.type.toUpperCase()}] ${blockDef.name}\n`;
+                    structure += `   輸入: ${blockDef.inputs ? blockDef.inputs.join(', ') : '無'}\n`;
+                    structure += `   輸出: ${blockDef.output}\n`;
+                    structure += `   代碼: ${blockDef.code}\n\n`;
+                });
+                
+                algorithmStructure.textContent = structure;
+            }
+            
+            // 工具函數
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // 初始範例：推薦系統
+            setTimeout(() => {
+                examples[0].click();
+            }, 500);
+        });
     </script>
 </body>
 </html>
